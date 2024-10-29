@@ -4,119 +4,137 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CBE Transfer Checker</title>
-
-    <!-- Firebase SDK and configuration -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-analytics.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBHDkPwISsJg6v7bJGgCq681YU8EKD1hWQ",
-            authDomain: "cbetransferchecker2.firebaseapp.com",
-            databaseURL: "https://cbetransferchecker2-default-rtdb.firebaseio.com",
-            projectId: "cbetransferchecker2",
-            storageBucket: "cbetransferchecker2.appspot.com",
-            messagingSenderId: "45384390245",
-            appId: "1:45384390245:web:e6b274531d8231290bd88c",
-            measurementId: "G-NWT6QZCTL8"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-    </script>
-
-    <!-- Your custom styles here -->
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-image: url("background.jpg");
+            background-size: cover;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-image: url('background.jpg');
-            background-size: cover;
-            background-position: center;
         }
         .container {
-            background-color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 10px;
             text-align: center;
             width: 300px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
         }
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            align-items: center;
-            justify-content: center;
-            color: #fff;
+        h1 {
             font-size: 24px;
+            color: #4A148C;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .button {
+            background-color: #4A148C;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .file-options {
+            display: flex;
+            justify-content: space-around;
+            margin: 10px 0;
+        }
+        .file-options button {
+            width: 45%;
+            padding: 5px;
+            background-color: #4A148C;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .user-count {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #4A148C;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1>CBE Transfer Checker</h1>
+        <p>FT Number (or Upload/Take Photo)</p>
+        <input type="text" id="ftNumber" placeholder="FT24...">
+        
+        <p>CBE Account Number (Last 8 Digits)</p>
+        <input type="number" id="accountNumber" placeholder="Enter Last 8 Digits">
 
-<div class="container">
-    <h2>CBE Transfer Checker</h2>
-    <label for="ftNumber">FT Number (or Upload/Take Photo)</label>
-    <input type="text" id="ftNumber" placeholder="FT24..." style="width: 100%; padding: 10px; margin: 10px 0;">
-    
-    <label for="accountNumber">CBE Account Number (Last 8 Digits)</label>
-    <input type="text" id="accountNumber" placeholder="Enter Last 8 Digits" style="width: 100%; padding: 10px; margin: 10px 0;">
-    
-    <button onclick="generateLink()" style="width: 100%; padding: 10px; background-color: purple; color: #fff; border: none; border-radius: 5px;">Generate Link</button>
-    <p>Developed by XSHOP</p>
-</div>
+        <div class="file-options">
+            <button onclick="chooseFile()">Choose File</button>
+            <button onclick="takePicture()">Take Picture</button>
+        </div>
+        
+        <button class="button" onclick="generateLink()">Generate Link</button>
 
-<div class="loading-overlay" id="loadingOverlay">
-    <div>
-        <p>Loading...</p>
-        <img src="logos.png" alt="Ad" style="width: 200px; margin-top: 10px;">
+        <div class="user-count">
+            <p>Total Generated Links: <span id="globalCounter">Loading...</span></p>
+        </div>
+        <p>Developed by XSHOP</p>
     </div>
-</div>
 
-<script>
-    // Function to display loading overlay with ad
-    function showLoading() {
-        document.getElementById("loadingOverlay").style.display = "flex";
-    }
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js"></script>
 
-    function hideLoading() {
-        document.getElementById("loadingOverlay").style.display = "none";
-    }
+    <!-- Firebase Configuration -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "cbetransferchecker2.firebaseapp.com",
+            databaseURL: "https://cbetransferchecker2-default-rtdb.firebaseio.com",
+            projectId: "cbetransferchecker2",
+            storageBucket: "cbetransferchecker2.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
+            measurementId: "YOUR_MEASUREMENT_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
 
-    // Function to generate link and increment count
-    function generateLink() {
-        showLoading();
+        const database = firebase.database();
 
-        const accountNumber = document.getElementById("accountNumber").value;
-        if (!accountNumber) {
-            alert("Please enter the CBE Account Number.");
-            hideLoading();
-            return;
+        // Load Global Counter
+        database.ref("globalCounter").on("value", (snapshot) => {
+            const globalCounter = snapshot.val();
+            document.getElementById("globalCounter").textContent = globalCounter;
+        });
+
+        function generateLink() {
+            const ftNumber = document.getElementById("ftNumber").value;
+            const accountNumber = document.getElementById("accountNumber").value;
+
+            if (ftNumber && accountNumber) {
+                // Your logic to generate and open link
+                alert("Link Generated!");
+
+                // Update Global Counter in Firebase
+                database.ref("globalCounter").transaction((current) => (current || 0) + 1);
+            } else {
+                alert("Please enter both the FT Number and CBE Account Number.");
+            }
         }
 
-        // Simulate loading time with setTimeout
-        setTimeout(() => {
-            // Update global counter in Firebase
-            const counterRef = database.ref("globalCounter");
-            counterRef.transaction((currentValue) => {
-                return (currentValue || 0) + 1;
-            });
+        function chooseFile() {
+            alert("Choose file function triggered!");
+            // Implement your file upload functionality here
+        }
 
-            alert("Link generated successfully!");
-            hideLoading();
-        }, 2000); // 2 seconds delay for demonstration
-    }
-</script>
-
+        function takePicture() {
+            alert("Take picture function triggered!");
+            // Implement your camera functionality here
+        }
+    </script>
 </body>
 </html>
