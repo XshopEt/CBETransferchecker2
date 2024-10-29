@@ -141,20 +141,21 @@
     </div>
 
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBHDkPwISsJg6v7bJGgCq681YU8EKD1hWQ",
-            authDomain: "cbetransferchecker2.firebaseapp.com",
-            databaseURL: "https://cbetransferchecker2-default-rtdb.firebaseio.com",
-            projectId: "cbetransferchecker2",
-            storageBucket: "cbetransferchecker2.appspot.com",
-            messagingSenderId: "45384390245",
-            appId: "1:45384390245:web:e6b274531d8231290bd88c",
-            measurementId: "G-NWT6QZCTL8"
-        };
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBHdKpWiSsJg6v7bJGgCq68lYU8EKD1hWQ",
+    authDomain: "cbetransferchecker2.firebaseapp.com",
+    databaseURL: "https://cbetransferchecker2-default-rtdb.firebaseio.com",
+    projectId: "cbetransferchecker2",
+    storageBucket: "cbetransferchecker2.appspot.com",
+    messagingSenderId: "45384390245",
+    appId: "1:45384390245:web:e6b274531d8231290bd88c",
+    measurementId: "G-NWT6Q2CTL8"
+};
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 console.log("Firebase initialized:", app);
         function extractFTNumber(file) {
             if (file) {
