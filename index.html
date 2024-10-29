@@ -318,6 +318,7 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    console.log("Firebase initialized:", db);
 
     // Reference to the user counter in the Firebase database
     const userCountRef = db.ref('globalCounter');
