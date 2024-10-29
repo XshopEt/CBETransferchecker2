@@ -168,6 +168,9 @@
             // Show overlay when loading starts
             document.getElementById('overlay').style.display = 'flex';
 
+            // Log the image path to check if it’s correct
+            console.log("Attempting to load overlay image:", document.getElementById('overlay').querySelector('img').src);
+
             Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
                 const ftNumberMatch = text.match(/FT\d+[A-Z0-9]*/i);
                 document.getElementById('ftNumber').value = ftNumberMatch ? ftNumberMatch[0] : "No FT Number found";
