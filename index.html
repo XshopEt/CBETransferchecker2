@@ -105,9 +105,9 @@
         }
     </style>
     <!-- Firebase and Tesseract.js -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -140,66 +140,78 @@
         <div class="footer">Developed by XSHOP</div>
     </div>
 
+    <!-- Loading overlay -->
+    <div id="overlay" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 10;">
+        <img src="logos.png" alt="Loading..." style="width: 150px;">
+    </div>
+
     <script>
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyBHdKpWiSsJg6v7bJGgCq68lYU8EKD1hWQ",
-    authDomain: "cbetransferchecker2.firebaseapp.com",
-    databaseURL: "https://cbetransferchecker2-default-rtdb.firebaseio.com",
-    projectId: "cbetransferchecker2",
-    storageBucket: "cbetransferchecker2.appspot.com",
-    messagingSenderId: "45384390245",
-    appId: "1:45384390245:web:e6b274531d8231290bd88c",
-    measurementId: "G-NWT6Q2CTL8"
-};
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBHdKpWiSsJg6v7bJGgCq68lYU8EKD1hWQ",
+        authDomain: "cbetransferchecker2.firebaseapp.com",
+        databaseURL: "https://cbetransferchecker2-default-rtdb.firebaseio.com",
+        projectId: "cbetransferchecker2",
+        storageBucket: "cbetransferchecker2.appspot.com",
+        messagingSenderId: "45384390245",
+        appId: "1:45384390245:web:e6b274531d8231290bd88c",
+        measurementId: "G-NWT6Q2CTL8"
+    };
 
-// Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-console.log("Firebase initialized:", app);
-        function extractFTNumber(file) {
-            if (file) {
-                Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
-                    const ftNumberMatch = text.match(/FT\d+[A-Z0-9]*/i);
-                    document.getElementById('ftNumber').value = ftNumberMatch ? ftNumberMatch[0] : "No FT Number found";
-                });
-            }
-        }
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    console.log("Firebase initialized:", app);
 
-        function openLink() {
-            const ftNumber = document.getElementById("ftNumber").value;
-            const accountNumber = document.getElementById("accountNumber").value;
-            
-            if (ftNumber && accountNumber) {
-                localStorage.setItem("accountNumber", accountNumber);
-                const url = `https://apps.cbe.com.et:100/?id=${ftNumber}${accountNumber}`;
-                window.open(url, "_blank");
+    function extractFTNumber(file) {
+        if (file) {
+            // Show overlay when loading starts
+            document.getElementById('overlay').style.display = 'flex';
 
-                incrementUserCounter();
-            } else {
-                alert("Please enter both the FT number and last 8 digits of the CBE account number.");
-            }
-        }
-
-        function incrementUserCounter() {
-            const userCountRef = database.ref('globalCounter');
-            userCountRef.transaction((currentCount) => {
-                return (currentCount || 0) + 1;
+            Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+                const ftNumberMatch = text.match(/FT\d+[A-Z0-9]*/i);
+                document.getElementById('ftNumber').value = ftNumberMatch ? ftNumberMatch[0] : "No FT Number found";
+            }).finally(() => {
+                // Hide overlay after processing completes
+                document.getElementById('overlay').style.display = 'none';
             });
         }
+    }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const savedAccountNumber = localStorage.getItem("accountNumber");
-            if (savedAccountNumber) {
-                document.getElementById("accountNumber").value = savedAccountNumber;
-            }
+    function openLink() {
+        const ftNumber = document.getElementById("ftNumber").value;
+        const accountNumber = document.getElementById("accountNumber").value;
+        
+        if (ftNumber && accountNumber) {
+            localStorage.setItem("accountNumber", accountNumber);
+            const url = `https://apps.cbe.com.et:100/?id=${ftNumber}${accountNumber}`;
+            window.open(url, "_blank");
 
-            const userCountRef = database.ref('globalCounter');
-            userCountRef.on('value', (snapshot) => {
-                const userCount = snapshot.val() || 0;
-                document.getElementById("userCounter").innerText = `Total Users: ${userCount}`;
-            });
+            incrementUserCounter();
+        } else {
+            alert("Please enter both the FT number and last 8 digits of the CBE account number.");
+        }
+    }
+
+    function incrementUserCounter() {
+        const userCountRef = database.ref('globalCounter');
+        userCountRef.transaction((currentCount) => {
+            return (currentCount || 0) + 1;
         });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedAccountNumber = localStorage.getItem("accountNumber");
+        if (savedAccountNumber) {
+            document.getElementById("accountNumber").value = savedAccountNumber;
+        }
+
+        const userCountRef = database.ref('globalCounter');
+        userCountRef.on('value', (snapshot) => {
+            const userCount = snapshot.val() || 0;
+            document.getElementById("userCounter").innerText = `Total Users: ${userCount}`;
+        });
+    });
     </script>
 </body>
 </html>
