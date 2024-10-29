@@ -64,6 +64,14 @@
             justify-content: space-between;
             margin-top: 10px;
         }
+        <!-- Loading overlay -->
+<div id="overlay" style="display: none;
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        justify-content: center;
+        align-items: center; z-index: 10;">
+    <img src="logos.png" alt="Loading..." style="width: 150px;">
+</div>
         .file-options input[type="file"] {
             display: none;
         }
@@ -158,13 +166,19 @@ const app = firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 console.log("Firebase initialized:", app);
         function extractFTNumber(file) {
-            if (file) {
-                Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
-                    const ftNumberMatch = text.match(/FT\d+[A-Z0-9]*/i);
-                    document.getElementById('ftNumber').value = ftNumberMatch ? ftNumberMatch[0] : "No FT Number found";
-                });
-            }
-        }
+    if (file) {
+        // Show overlay
+        document.getElementById('overlay').style.display = 'flex';
+        
+        Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+            const ftNumberMatch = text.match(/FT\d+[A-Z0-9]*/i);
+            document.getElementById('ftNumber').value = ftNumberMatch ? ftNumberMatch[0] : "No FT Number found";
+        }).finally(() => {
+            // Hide overlay
+            document.getElementById('overlay').style.display = 'none';
+        });
+    }
+}
 
         function openLink() {
             const ftNumber = document.getElementById("ftNumber").value;
