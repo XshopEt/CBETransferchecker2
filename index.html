@@ -78,8 +78,9 @@
         <input type="number" id="accountNumber" placeholder="Enter Last 8 Digits">
 
         <div class="file-options">
-            <button onclick="chooseFile()">Choose File</button>
+            <button onclick="document.getElementById('fileInput').click()">Choose File</button>
             <button onclick="takePicture()">Take Picture</button>
+            <input type="file" id="fileInput" style="display:none;" accept="image/*" onchange="handleFileSelect(event)">
         </div>
         
         <button class="button" onclick="generateLink()">Generate Link</button>
@@ -131,14 +132,17 @@
             }
         }
 
-        function chooseFile() {
-            alert("Choose file function triggered!");
-            // Implement file selection functionality here
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                alert(`File selected: ${file.name}`);
+                // Implement file handling logic here
+            }
         }
 
         function takePicture() {
             alert("Take picture function triggered!");
-            // Implement take picture functionality here
+            // Add camera access functionality if needed
         }
     </script>
 </body>
