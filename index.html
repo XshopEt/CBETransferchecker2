@@ -65,6 +65,12 @@
             color: #4A148C;
             margin-top: 20px;
         }
+        #videoPreview {
+            display: none;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -84,6 +90,8 @@
         </div>
         
         <button class="button" onclick="generateLink()">Generate Link</button>
+
+        <video id="videoPreview" autoplay></video>
 
         <div class="user-count">
             <p>Total Users: <span id="globalCounter">Loading...</span></p>
@@ -141,8 +149,20 @@
         }
 
         function takePicture() {
-            alert("Take picture function triggered!");
-            // Add camera access functionality if needed
+            const video = document.getElementById("videoPreview");
+
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    video.srcObject = stream;
+                    video.style.display = "block";
+                })
+                .catch((error) => {
+                    alert("Camera access denied or unavailable.");
+                });
+            } else {
+                alert("Your browser does not support camera access.");
+            }
         }
     </script>
 </body>
