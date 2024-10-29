@@ -20,7 +20,9 @@
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            width: 300px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
         }
         h1 {
             font-size: 24px;
@@ -32,15 +34,18 @@
             margin: 10px 0;
             border-radius: 5px;
             border: 1px solid #ccc;
+            font-size: 16px;
         }
-        .button {
+        .button, .file-options button {
             background-color: #4A148C;
             color: white;
             padding: 10px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
             width: 100%;
+            margin-top: 10px;
         }
         .file-options {
             display: flex;
@@ -48,28 +53,28 @@
             margin: 10px 0;
         }
         .file-options button {
-            width: 45%;
-            padding: 5px;
-            background-color: #4A148C;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            width: 48%;
         }
         .user-count {
             margin-top: 10px;
+            font-size: 16px;
+            color: #4A148C;
+        }
+        .footer-text {
             font-size: 14px;
             color: #4A148C;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <img src="logo.jpg" alt="Logo" style="width: 80px; margin-bottom: 15px;">
         <h1>CBE Transfer Checker</h1>
-        <p>FT Number (or Upload/Take Photo)</p>
+        <label>FT Number (or Upload/Take Photo)</label>
         <input type="text" id="ftNumber" placeholder="FT24...">
         
-        <p>CBE Account Number (Last 8 Digits)</p>
+        <label>CBE Account Number (Last 8 Digits)</label>
         <input type="number" id="accountNumber" placeholder="Enter Last 8 Digits">
 
         <div class="file-options">
@@ -80,9 +85,9 @@
         <button class="button" onclick="generateLink()">Generate Link</button>
 
         <div class="user-count">
-            <p>Total Generated Links: <span id="globalCounter">Loading...</span></p>
+            <p>Total Users: <span id="globalCounter">Loading...</span></p>
         </div>
-        <p>Developed by XSHOP</p>
+        <p class="footer-text">Developed by XSHOP</p>
     </div>
 
     <!-- Firebase Libraries -->
@@ -108,7 +113,7 @@
         // Load Global Counter
         database.ref("globalCounter").on("value", (snapshot) => {
             const globalCounter = snapshot.val();
-            document.getElementById("globalCounter").textContent = globalCounter;
+            document.getElementById("globalCounter").textContent = globalCounter || 0;
         });
 
         function generateLink() {
@@ -128,12 +133,12 @@
 
         function chooseFile() {
             alert("Choose file function triggered!");
-            // Implement your file upload functionality here
+            // Implement file selection functionality here
         }
 
         function takePicture() {
             alert("Take picture function triggered!");
-            // Implement your camera functionality here
+            // Implement take picture functionality here
         }
     </script>
 </body>
