@@ -1,70 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CBE Transfer Checker</title>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js"></script>
-    <style>
-        /* Basic styling */
-        .container { text-align: center; margin-top: 50px; }
-        .counter { font-size: 20px; margin-top: 20px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>CBE Transfer Checker</h2>
-        <form id="inputForm">
-            <input type="text" id="ftNumber" placeholder="FT Number">
-            <input type="text" id="accountNumber" placeholder="CBE Account Number (Last 8 Digits)">
-            <button type="button" onclick="generateLink()">Generate Link</button>
-        </form>
-        <div id="globalCounterDisplay" class="counter">Total Links Generated: Loading...</div>
-    </div>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-analytics.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBHDkPwISsJg6v7bJGgCq681YU8EKD1hWQ",
+        authDomain: "cbetransferchecker2.firebaseapp.com",
+        databaseURL: "https://cbetransferchecker2-default-rtdb.firebaseio.com",
+        projectId: "cbetransferchecker2",
+        storageBucket: "cbetransferchecker2.appspot.com",
+        messagingSenderId: "45384390245",
+        appId: "1:45384390245:web:e6b274531d8231290bd88c",
+        measurementId: "G-NWT6QZCTL8"
+    };
 
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "your-api-key",
-            authDomain: "your-auth-domain",
-            databaseURL: "your-database-url",
-            projectId: "your-project-id",
-            storageBucket: "your-storage-bucket",
-            messagingSenderId: "your-messaging-sender-id",
-            appId: "your-app-id"
-        };
-
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database(app);
-
-        // Reference to the globalCounter in the database
-        const counterRef = database.ref('globalCounter');
-
-        // Display the current counter value
-        counterRef.on('value', (snapshot) => {
-            const count = snapshot.val();
-            document.getElementById('globalCounterDisplay').innerText = `Total Links Generated: ${count}`;
-        });
-
-        // Function to handle link generation and increment the counter
-        function generateLink() {
-            // Increment the counter in the database
-            counterRef.transaction((currentCount) => {
-                return (currentCount || 0) + 1;
-            });
-
-            // Generate link functionality (if applicable)
-            const ftNumber = document.getElementById("ftNumber").value;
-            const accountNumber = document.getElementById("accountNumber").value;
-            if (ftNumber && accountNumber) {
-                const url = `https://apps.cbe.com.et:100/?id=${ftNumber}${accountNumber}`;
-                window.open(url, "_blank");
-            } else {
-                alert("Please enter both the FT number and Account number.");
-            }
-        }
-    </script>
-</body>
-</html>
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const analytics = firebase.analytics();
+</script>
