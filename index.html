@@ -3,151 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CBE Transfer Checker</title>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1"></script>
+    <title>CBE Transfer Checker with Ads</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-image: url('background.jpg');
-            background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        /* Basic reset and styling */
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
         }
-        #app {
-            background-color: rgba(255, 255, 255, 0.9);
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #333;
+            background-image: url('background.jpg'); /* Set the background image */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .container {
+            max-width: 400px;
+            width: 100%;
             padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
             border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 300px;
+            position: relative;
         }
-        h1 {
-            color: #4a148c;
+        .container img {
+            width: 80px;
+            margin-bottom: 20px;
         }
-        input[type="text"], input[type="file"] {
+        .container h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: #6A0DAD;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="text"] {
             width: 100%;
             padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
+            font-size: 1rem;
             border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .file-options {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .file-options input[type="file"] {
+            display: none; /* Hide the file input itself */
+        }
+        .file-options label {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            color: #fff;
+            background-color: #6A0DAD;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .file-options label:hover {
+            background-color: #580A93;
         }
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
+            font-size: 1rem;
             color: #fff;
-            background-color: #4a148c;
+            background-color: #6A0DAD;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #6a1b9a;
+            background-color: #580A93;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #6A0DAD;
+        }
+        /* Spinner and Ad overlay styling */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7); /* Dim background */
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            color: #fff;
+            flex-direction: column;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .ad-container {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            box-shadow: none;
+            background-color: transparent; /* Make background transparent */
+        }
+        .ad-container img {
+            width: 100%;
+            border-radius: 4px;
+        }
+        .counter {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #6A0DAD;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
+    <!-- Firebase and Tesseract.js -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script> 
 </head>
 <body>
-    <div id="app">
-        <h1>CBE Transfer Checker</h1>
-        <p>FT Number (or Upload/Take Photo)</p>
-        <input type="text" id="ftNumber" placeholder="FT24..." />
-        <p>CBE Account Number (Last 8 Digits)</p>
-        <input type="text" id="accountNumber" placeholder="Enter Last 8 Digits" />
+    <div class="container">
+        <img src="logo.jpg" alt="CBE Logo">
         
-        <div style="display: flex; justify-content: space-between;">
-            <button onclick="document.getElementById('fileInput').click();">Choose File</button>
-            <button onclick="takePicture()">Take Picture</button>
-        </div>
-        <input type="file" id="fileInput" style="display:none" accept="image/*">
+        <h2>CBE Transfer Checker</h2>
+        
+        <form id="inputForm">
+            <div class="form-group">
+                <label for="ftNumber">FT Number (or Upload/Take Photo)</label>
+                <input type="text" id="ftNumber" name="ftNumber" placeholder="FT24..." required>
+                
+                <div class="file-options">
+                    <label for="chooseFile">Choose File</label>
+                    <input type="file" id="chooseFile" accept="image/*" onchange="extractFTNumber(this.files[0])">
+                    
+                    <label for="takePhoto">Take Picture</label>
+                    <input type="file" id="takePhoto" accept="image/*" capture="environment" onchange="extractFTNumber(this.files[0])">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="accountNumber">CBE Account Number (Last 8 Digits)</label>
+                <input type="text" id="accountNumber" name="accountNumber" placeholder="Enter Last 8 Digits" required>
+            </div>
+            <button type="button" onclick="openLink()">Generate Link</button>
+        </form>
 
-        <button onclick="generateLink()">Generate Link</button>
-        <p id="userCounter">Total Users: Loading...</p>
-        <p>Developed by XSHOP</p>
+        <!-- Display user counter -->
+        <div id="userCounter" class="counter"></div>
+
+        <!-- Loading overlay with spinner and ad container -->
+        <div id="overlay" class="overlay">
+            <div class="spinner"></div>
+            <div class="ad-container">
+                <img src="Logos.png" alt="Ad">
+            </div>
+        </div>
+
+        <div class="footer">Developed by XSHOP</div>
     </div>
 
     <script>
-        // Firebase configuration (replace with your Firebase details if necessary)
+        // Firebase configuration
         const firebaseConfig = {
-            apiKey: "YOUR_FIREBASE_API_KEY",
-            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-            databaseURL: "YOUR_FIREBASE_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID",
-            measurementId: "YOUR_MEASUREMENT_ID"
+            apiKey: "your-api-key",
+            authDomain: "your-auth-domain",
+            databaseURL: "your-database-url",
+            projectId: "your-project-id",
+            storageBucket: "your-storage-bucket",
+            messagingSenderId: "your-messaging-sender-id",
+            appId: "your-app-id",
+            measurementId: "your-measurement-id"
         };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
 
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Function to update the user counter from Firebase
-        function updateCounter() {
-            const counterRef = database.ref('globalCounter');
-            counterRef.once('value', (snapshot) => {
-                const count = snapshot.val();
-                document.getElementById("userCounter").innerText = `Total Users: ${count}`;
-            });
-        }
+        function extractFTNumber(file) {
+            const overlay = document.getElementById('overlay');
 
-        // Function to increment the counter on link generation
-        function generateLink() {
-            const counterRef = database.ref('globalCounter');
-            counterRef.transaction((currentCount) => {
-                return (currentCount || 0) + 1;
-            });
-            updateCounter();
-            alert("Link generated!"); // You can add link generation logic here
-        }
-
-        // Function to take a picture
-        function takePicture() {
-            alert("Take picture function triggered!"); // Placeholder for camera access
-        }
-
-        // OCR function to extract FT number from uploaded image
-        document.getElementById("fileInput").addEventListener("change", handleFileUpload);
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.src = e.target.result;
+                overlay.style.display = 'flex';
 
-                    img.onload = function() {
-                        Tesseract.recognize(
-                            img,
-                            'eng',
-                            {
-                                logger: m => console.log(m) // Log progress
-                            }
-                        ).then(({ data: { text } }) => {
-                            console.log("OCR Result:", text);
-
-                            // Use regex to find FT number format (e.g., "FT" followed by alphanumeric characters)
-                            const ftNumberMatch = text.match(/FT\w+/);
-                            if (ftNumberMatch) {
-                                const ftNumber = ftNumberMatch[0];
-                                document.getElementById("ftNumber").value = ftNumber;
-                                alert("FT Number Found: " + ftNumber);
-                            } else {
-                                alert("No FT number found in the image.");
-                            }
-                        });
-                    };
-                };
-                reader.readAsDataURL(file);
+                Tesseract.recognize(
+                    file,
+                    'eng',
+                    {
+                        logger: (m) => console.log(m)
+                    }
+                ).then(({ data: { text } }) => {
+                    const ftNumberMatch = text.match(/FT\d+[A-Z0-9]*/i);
+                    if (ftNumberMatch) {
+                        document.getElementById('ftNumber').value = ftNumberMatch[0];
+                    } else {
+                        alert("No FT Number found in the image.");
+                    }
+                }).catch(error => {
+                    console.error("Error during OCR processing:", error);
+                    alert("Failed to process the image.");
+                }).finally(() => {
+                    overlay.style.display = 'none';
+                });
             }
         }
 
-        // Initial counter update
-        updateCounter();
+        function openLink() {
+            const ftNumber = document.getElementById("ftNumber").value;
+            const accountNumber = document.getElementById("accountNumber").value;
+            
+            if (ftNumber && accountNumber) {
+                localStorage.setItem("accountNumber", accountNumber);
+
+                const url = `https://apps.cbe.com.et:100/?id=${ftNumber}${accountNumber}`;
+                window.open(url, "_blank");
+
+                updateGlobalUserCount();
+            } else {
+                alert("Please enter both the FT number and last 8 digits of the CBE account number.");
+            }
+        }
+
+        function updateGlobalUserCount() {
+            const userCountRef = database.ref('globalCounter');
+
+            userCountRef.get().then((snapshot) => {
+                if (snapshot.exists()) {
+                    let currentCount = snapshot.val();
+                    document.getElementById("userCounter").innerText = `Total Users: ${currentCount}`;
+                    userCountRef.set(currentCount + 1);
+                } else {
+                    userCountRef.set(1);
+                    document.getElementById("userCounter").innerText = "Total Users: 1";
+                }
+            }).catch((error) => {
+                console.error("Error updating user count:", error);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const savedAccountNumber = localStorage.getItem("accountNumber");
+            if (savedAccountNumber) {
+                document.getElementById("accountNumber").value = savedAccountNumber;
+            }
+
+            const userCountRef = database.ref('globalCounter');
+            userCountRef.on('value', (snapshot) => {
+                const userCount = snapshot.val() || 0;
+                document.getElementById("userCounter").innerText = `Total Users: ${userCount}`;
+            });
+        });
     </script>
 </body>
 </html>
