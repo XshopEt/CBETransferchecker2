@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CBE Transfer Checker</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-image: url("background.jpg");
+            background-image: url('background.jpg');
             background-size: cover;
             display: flex;
             justify-content: center;
@@ -15,155 +16,138 @@
             height: 100vh;
             margin: 0;
         }
-        .container {
-            background: rgba(255, 255, 255, 0.9);
+        #app {
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 8px;
             text-align: center;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            width: 300px;
         }
         h1 {
-            font-size: 24px;
-            color: #4A148C;
+            color: #4a148c;
         }
-        input[type="text"], input[type="number"] {
+        input[type="text"], input[type="file"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
             border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 16px;
+            border: 1px solid #ddd;
         }
-        .button, .file-options button {
-            background-color: #4A148C;
-            color: white;
+        button {
+            width: 100%;
             padding: 10px;
+            color: #fff;
+            background-color: #4a148c;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            width: 100%;
-            margin-top: 10px;
         }
-        .file-options {
-            display: flex;
-            justify-content: space-around;
-            margin: 10px 0;
-        }
-        .file-options button {
-            width: 48%;
-        }
-        .user-count {
-            margin-top: 10px;
-            font-size: 16px;
-            color: #4A148C;
-        }
-        .footer-text {
-            font-size: 14px;
-            color: #4A148C;
-            margin-top: 20px;
-        }
-        #videoPreview {
-            display: none;
-            width: 100%;
-            margin-top: 10px;
-            border-radius: 5px;
+        button:hover {
+            background-color: #6a1b9a;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="logo.jpg" alt="Logo" style="width: 80px; margin-bottom: 15px;">
+    <div id="app">
         <h1>CBE Transfer Checker</h1>
-        <label>FT Number (or Upload/Take Photo)</label>
-        <input type="text" id="ftNumber" placeholder="FT24...">
+        <p>FT Number (or Upload/Take Photo)</p>
+        <input type="text" id="ftNumber" placeholder="FT24..." />
+        <p>CBE Account Number (Last 8 Digits)</p>
+        <input type="text" id="accountNumber" placeholder="Enter Last 8 Digits" />
         
-        <label>CBE Account Number (Last 8 Digits)</label>
-        <input type="number" id="accountNumber" placeholder="Enter Last 8 Digits">
-
-        <div class="file-options">
-            <button onclick="document.getElementById('fileInput').click()">Choose File</button>
+        <div style="display: flex; justify-content: space-between;">
+            <button onclick="document.getElementById('fileInput').click();">Choose File</button>
             <button onclick="takePicture()">Take Picture</button>
-            <input type="file" id="fileInput" style="display:none;" accept="image/*" onchange="handleFileSelect(event)">
         </div>
-        
-        <button class="button" onclick="generateLink()">Generate Link</button>
+        <input type="file" id="fileInput" style="display:none" accept="image/*">
 
-        <video id="videoPreview" autoplay></video>
-
-        <div class="user-count">
-            <p>Total Users: <span id="globalCounter">Loading...</span></p>
-        </div>
-        <p class="footer-text">Developed by XSHOP</p>
+        <button onclick="generateLink()">Generate Link</button>
+        <p id="userCounter">Total Users: Loading...</p>
+        <p>Developed by XSHOP</p>
     </div>
 
-    <!-- Firebase Libraries -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js"></script>
-
-    <!-- Firebase Configuration -->
     <script>
+        // Firebase configuration (replace with your Firebase details if necessary)
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "cbetransferchecker2.firebaseapp.com",
-            databaseURL: "https://cbetransferchecker2-default-rtdb.firebaseio.com",
-            projectId: "cbetransferchecker2",
-            storageBucket: "cbetransferchecker2.appspot.com",
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+            databaseURL: "YOUR_FIREBASE_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
             messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
             appId: "YOUR_APP_ID",
             measurementId: "YOUR_MEASUREMENT_ID"
         };
+        
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
 
         const database = firebase.database();
 
-        // Load Global Counter
-        database.ref("globalCounter").on("value", (snapshot) => {
-            const globalCounter = snapshot.val();
-            document.getElementById("globalCounter").textContent = globalCounter || 0;
-        });
-
-        function generateLink() {
-            const ftNumber = document.getElementById("ftNumber").value;
-            const accountNumber = document.getElementById("accountNumber").value;
-
-            if (ftNumber && accountNumber) {
-                // Your logic to generate and open link
-                alert("Link Generated!");
-
-                // Update Global Counter in Firebase
-                database.ref("globalCounter").transaction((current) => (current || 0) + 1);
-            } else {
-                alert("Please enter both the FT Number and CBE Account Number.");
-            }
+        // Function to update the user counter from Firebase
+        function updateCounter() {
+            const counterRef = database.ref('globalCounter');
+            counterRef.once('value', (snapshot) => {
+                const count = snapshot.val();
+                document.getElementById("userCounter").innerText = `Total Users: ${count}`;
+            });
         }
 
-        function handleFileSelect(event) {
+        // Function to increment the counter on link generation
+        function generateLink() {
+            const counterRef = database.ref('globalCounter');
+            counterRef.transaction((currentCount) => {
+                return (currentCount || 0) + 1;
+            });
+            updateCounter();
+            alert("Link generated!"); // You can add link generation logic here
+        }
+
+        // Function to take a picture
+        function takePicture() {
+            alert("Take picture function triggered!"); // Placeholder for camera access
+        }
+
+        // OCR function to extract FT number from uploaded image
+        document.getElementById("fileInput").addEventListener("change", handleFileUpload);
+
+        function handleFileUpload(event) {
             const file = event.target.files[0];
             if (file) {
-                alert(`File selected: ${file.name}`);
-                // Implement file handling logic here
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+
+                    img.onload = function() {
+                        Tesseract.recognize(
+                            img,
+                            'eng',
+                            {
+                                logger: m => console.log(m) // Log progress
+                            }
+                        ).then(({ data: { text } }) => {
+                            console.log("OCR Result:", text);
+
+                            // Use regex to find FT number format (e.g., "FT" followed by alphanumeric characters)
+                            const ftNumberMatch = text.match(/FT\w+/);
+                            if (ftNumberMatch) {
+                                const ftNumber = ftNumberMatch[0];
+                                document.getElementById("ftNumber").value = ftNumber;
+                                alert("FT Number Found: " + ftNumber);
+                            } else {
+                                alert("No FT number found in the image.");
+                            }
+                        });
+                    };
+                };
+                reader.readAsDataURL(file);
             }
         }
 
-        function takePicture() {
-            const video = document.getElementById("videoPreview");
-
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: true })
-                .then((stream) => {
-                    video.srcObject = stream;
-                    video.style.display = "block";
-                })
-                .catch((error) => {
-                    alert("Camera access denied or unavailable.");
-                });
-            } else {
-                alert("Your browser does not support camera access.");
-            }
-        }
+        // Initial counter update
+        updateCounter();
     </script>
 </body>
 </html>
