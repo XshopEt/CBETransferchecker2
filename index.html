@@ -33,7 +33,7 @@
             text-align: center;
             position: relative;
         }
-        .container img {
+        .container img.logo {
             width: 80px;
             margin-bottom: 20px;
         }
@@ -104,30 +104,21 @@
             color: #6A0DAD;
         }
 
-        /* Loading overlay and spinner */
-        #overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
+        /* Spinner styles */
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            border-top: 5px solid #ffffff;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            border-left-color: #6A0DAD;
+            animation: spin 1s ease infinite;
+            display: none; /* Hidden initially */
+            margin-top: 20px;
         }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
     <!-- Firebase and Tesseract.js -->
@@ -137,7 +128,7 @@
 </head>
 <body>
     <div class="container">
-        <img src="logo.jpg" alt="CBE Logo">
+        <img src="logo.jpg" alt="CBE Logo" class="logo">
         <h2>CBE Transfer Checker</h2>
         
         <form id="inputForm">
@@ -164,24 +155,22 @@
         <div id="userCounter" class="counter">Total Users: Loading...</div>
 
         <div class="footer">Developed by XSHOP</div>
+
+        <!-- Loading spinner below logo -->
+        <div id="spinner" class="spinner"></div>
     </div>
 
-    <!-- Loading overlay -->
-    <div id="overlay">
-        <div class="spinner"></div>
-    </div>
-    
     <script>
     // Firebase configuration
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        databaseURL: "YOUR_DATABASE_URL",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID",
-        measurementId: "YOUR_MEASUREMENT_ID"
+        apiKey: "AIzaSyBHdKpWiSsJg6v7bJGgCq68lYU8EKD1hWQ",
+        authDomain: "cbetransferchecker2.firebaseapp.com",
+        databaseURL: "https://cbetransferchecker2-default-rtdb.firebaseio.com",
+        projectId: "cbetransferchecker2",
+        storageBucket: "cbetransferchecker2.appspot.com",
+        messagingSenderId: "45384390245",
+        appId: "1:45384390245:web:e6b274531d8231290bd88c",
+        measurementId: "G-NWT6Q2CTL8"
     };
 
     // Initialize Firebase
@@ -191,15 +180,15 @@
 
     function extractFTNumber(file) {
         if (file) {
-            // Show overlay with loading spinner only when file is being processed
-            document.getElementById('overlay').style.display = 'flex';
+            // Show spinner when loading starts
+            document.getElementById('spinner').style.display = 'block';
 
             Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
                 const ftNumberMatch = text.match(/FT\d+[A-Z0-9]*/i);
                 document.getElementById('ftNumber').value = ftNumberMatch ? ftNumberMatch[0] : "No FT Number found";
             }).finally(() => {
-                // Hide overlay after processing completes
-                document.getElementById('overlay').style.display = 'none';
+                // Hide spinner after processing completes
+                document.getElementById('spinner').style.display = 'none';
             });
         }
     }
